@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.poetry]
+name = "monolith-refactor-poc"
+version = "0.1.0"
+description = "Experimental monolith POC for braingraph pipeline"
+authors = ["braingraph-team <dev@example.org>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0"
