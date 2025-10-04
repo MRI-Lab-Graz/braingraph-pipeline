@@ -61,117 +61,30 @@ def quick_uniqueness_check(matrices_dir):
     logging.info(f"  - Expected combinations per subject: {expected_combinations}")
     logging.info(f"  - Actual range: {actual_combinations.min()} - {actual_combinations.max()}")
     
-    # Check for subjects with missing combinations
-    incomplete_subjects = actual_combinations[actual_combinations < expected_combinations]
-    if len(incomplete_subjects) > 0:
-        logging.warning(f"⚠️  {len(incomplete_subjects)} subjects have incomplete parameter combinations")
-        for subject, count in incomplete_subjects.head().items():
-            logging.warning(f"    {subject}: {count}/{expected_combinations} combinations")
-    else:
-        logging.info("✅ All subjects have complete parameter combinations")
-    
-    # Check value diversity within subjects
-    diversity_results = []
-    key_measures = ['density', 'global_efficiency(binary)', 'clustering_coeff_average(binary)']
-    
-    for subject in df['subject_id'].unique()[:5]:  # Check first 5 subjects
-        subject_data = df[df['subject_id'] == subject]
-        
-        for measure in key_measures:
-            if measure in df.columns:
-                measure_values = subject_data[measure]
-                if len(measure_values) > 1:
-                    values = measure_values.values
-                    diversity_score = np.std(values) / (np.mean(values) + 1e-10)  # Coefficient of variation
-                    diversity_results.append({
-                        'subject': subject,
-                        'measure': measure,
-                        'n_values': len(values),
-                        'mean': np.mean(values),
-                        'std': np.std(values),
-                        'diversity_score': diversity_score
-                    })
-    
-    if diversity_results:
-        diversity_df = pd.DataFrame(diversity_results)
-        logging.info(f"\n📊 Parameter diversity analysis (sample of {len(diversity_df)} measure/subject combinations):")
-        
-        avg_diversity = diversity_df.groupby('measure')['diversity_score'].mean()
-        for measure, score in avg_diversity.items():
-            logging.info(f"  - {measure}: diversity = {score:.4f}")
-            
-        # Flag low diversity
-        low_diversity = diversity_df[diversity_df['diversity_score'] < 0.01]
-        if len(low_diversity) > 0:
-            logging.warning(f"⚠️  {len(low_diversity)} measure/subject combinations show low parameter diversity (<0.01)")
-        else:
-            logging.info("✅ Good parameter diversity detected across all measures")
-    
-    return True
+    #!/usr/bin/env python3
+    # Supports: --dry-run (delegated)
+    # When run without arguments the script prints help: parser.print_help()
+    """
+    Compatibility wrapper: delegates to `scripts/quality_checks.py quick`.
 
-def quality_outlier_analysis(matrices_dir):
-    """Analyze quality metrics for outlier detection."""
-    logging.info("\n🔍 Quality outlier analysis...")
-    
-    agg_file = os.path.join(matrices_dir, 'aggregated_network_measures.csv')
-    if not os.path.exists(agg_file):
-        logging.error(f"❌ Aggregated file not found: {agg_file}")
-        return False
-    
-    df = pd.read_csv(agg_file)
-    
-    # Focus on key quality measures that exist as columns
-    quality_measures = ['density', 'global_efficiency(binary)', 'clustering_coeff_average(binary)', 'small-worldness(binary)']
-    
-    outlier_summary = []
-    
-    for measure in quality_measures:
-        if measure not in df.columns:
-            continue
-            
-        values = df[measure].dropna().values
-        if len(values) == 0:
-            continue
-        
-        # Calculate outlier thresholds (using IQR method)
-        Q1 = np.percentile(values, 25)
-        Q3 = np.percentile(values, 75)
-        IQR = Q3 - Q1
-        lower_bound = Q1 - 1.5 * IQR
-        upper_bound = Q3 + 1.5 * IQR
-        
-        # Find outliers based on values
-        outlier_mask = (values < lower_bound) | (values > upper_bound)
-        outlier_indices = df[df[measure].notna()].index[outlier_mask]
-        outliers = df.loc[outlier_indices]
-        
-        outlier_subjects = outliers['subject_id'].unique()
-        
-        outlier_summary.append({
-            'measure': measure,
-            'n_total': len(values),
-            'n_outliers': len(outliers),
-            'outlier_rate': len(outliers) / len(values) if len(values) > 0 else 0,
-            'outlier_subjects': len(outlier_subjects),
-            'mean': np.mean(values),
-            'std': np.std(values),
-            'Q1': Q1,
-            'Q3': Q3
-        })
-        
-        if len(outliers) > 0:
-            logging.warning(f"⚠️  {measure}: {len(outliers)} outliers ({len(outlier_subjects)} subjects)")
-            worst_outliers = outliers.nlargest(3, measure)['subject_id'].tolist()
-            logging.warning(f"    Subjects with extreme values: {worst_outliers[:3]}")
-        else:
-            logging.info(f"✅ {measure}: No outliers detected")
-    
-    # Overall quality assessment
-    outlier_df = pd.DataFrame(outlier_summary)
-    if not outlier_df.empty:
-        avg_outlier_rate = outlier_df['outlier_rate'].mean()
-        total_outlier_subjects = set()
-        
+    Keeps the original entrypoint `scripts/quick_quality_check.py` working while
+    centralizing implementation in `quality_checks.py`.
+    """
+
+    from __future__ import annotations
+
+    import sys
+    from pathlib import Path
+
+    def main():
+        # Delegate to the unified quality_checks module
+        script = Path(__file__).resolve().parent / 'quality_checks.py'
+        args = ['quick'] + sys.argv[1:]
+        cmd = [sys.executable, str(script)] + args
+        return __import__('subprocess').call(cmd)
+
+    if __name__ == '__main__':
+        raise SystemExit(main())
         for measure in quality_measures:
             if measure not in df.columns:
                 continue

@@ -1,7 +1,7 @@
 {
   "comment": "Example configuration for connectivity matrix extraction",
   
-  "dsi_studio_cmd": "/data/local/software/dsi-studio/dsi_studio",
+  "dsi_studio_cmd": "/Applications/dsi_studio.app/Contents/MacOS/dsi_studio",
   
   "atlases": [
     "ATAG_basal_ganglia",

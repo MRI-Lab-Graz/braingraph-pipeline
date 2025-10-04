@@ -1,5 +1,15 @@
 # Global Development Instructions
 
+# Purpose
+- takes preprocessed fib files 
+- generates connectivity matrices using DSI Studio
+- uses a wide spectrum of parameters
+- outputs matrices in a structured directory format
+- ensures reproducibility and consistency across runs
+- weight each parameter combination to get a qa score
+- use cross-validation to find optimal parameter sets
+- give user BEST parameter sets for their data (THAT'S THE GOAL!)
+
 ## Package Management
 - **All packages MUST be installed via `install.sh`** - never install packages manually
 - **All installations MUST occur within the virtual environment** - no global installations

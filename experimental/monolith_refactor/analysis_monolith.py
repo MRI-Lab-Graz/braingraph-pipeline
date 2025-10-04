@@ -17,6 +17,7 @@ import argparse
 import sys
 import json
 from pathlib import Path
+import numpy as np
 
 HAS_DEPS = True
 try:
@@ -26,6 +27,39 @@ try:
     from scripts.statistical_metric_comparator import ConnectivityMetricComparator
 except Exception:
     HAS_DEPS = False
+
+
+def compute_sparsity_from_matrix(matrix: np.ndarray) -> float:
+    """Compute network sparsity as proportion of zero off-diagonal elements.
+
+    Returns a float in [0,1].
+    """
+    if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1]:
+        raise ValueError("matrix must be square")
+    n = matrix.shape[0]
+    mask = ~np.eye(n, dtype=bool)
+    off = matrix[mask]
+    zeros = np.sum(off == 0)
+    return float(zeros) / float(off.size)
+
+
+def compute_sparsity_score_generic(sparsity_values: np.ndarray, min_sparsity: float = 0.05, max_sparsity: float = 0.4) -> np.ndarray:
+    """Compute sparsity quality scores as in MetricOptimizer.compute_sparsity_score.
+
+    Uses the same heuristic: values near center of [min,max] get score ~1, outside range penalized.
+    """
+    sparsity_values = np.array(sparsity_values, dtype=float)
+    min_s, max_s = float(min_sparsity), float(max_sparsity)
+    optimal = (min_s + max_s) / 2.0
+    width = max_s - min_s
+    distance = np.abs(sparsity_values - optimal)
+    # Avoid division by zero
+    denom = (width / 2.0) if width != 0 else 1.0
+    normalized = distance / denom
+    scores = np.maximum(0.0, 1.0 - normalized)
+    out_of_range = (sparsity_values < min_s) | (sparsity_values > max_s)
+    scores[out_of_range] = scores[out_of_range] * 0.1
+    return scores
 
 
 def do_score(args: argparse.Namespace) -> int:

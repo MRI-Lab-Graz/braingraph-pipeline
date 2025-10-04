@@ -119,3 +119,22 @@ echo -e "${YELLOW}📋 To deactivate the environment:${NC}"
 echo "  deactivate"
 echo ""
 echo -e "${GREEN}🚀 Environment ready for braingraph pipeline!${NC}"
+
+# Optional experimental extras
+# Install experimental dev requirements when INSTALL_EXPERIMENTAL=1 is set.
+# This keeps all installs centralized in install.sh as requested by global instructions.
+if [ "${INSTALL_EXPERIMENTAL:-0}" = "1" ]; then
+    echo -e "\n${BLUE}🧪 Installing experimental extras...${NC}"
+    if [ -f "experimental/monolith_refactor/requirements.txt" ]; then
+        echo -e "${BLUE}🔧 Installing experimental requirements from experimental/monolith_refactor/requirements.txt${NC}"
+        # Ensure pip exists in the venv (some venvs may not have pip bootstrapped)
+        python -m ensurepip --upgrade || true
+        python -m pip install --upgrade pip setuptools wheel || true
+        # Best-effort: use python -m pip inside venv
+        python -m pip install -r experimental/monolith_refactor/requirements.txt || {
+            echo -e "${YELLOW}⚠️  Failed to install experimental requirements. Continuing without them.${NC}"
+        }
+    else
+        echo -e "${YELLOW}⚠️  No experimental requirements file found; skipping.${NC}"
+    fi
+fi
