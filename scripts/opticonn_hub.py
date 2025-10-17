@@ -71,9 +71,7 @@ Advanced Exploration:
         help="Optimization method (default: bayesian)",
     )
     p_find.add_argument("-i", "--data-dir", required=True, help="Input data directory")
-    p_find.add_argument(
-        "-o", "--output-dir", required=True, help="Output directory for results"
-    )
+    p_find.add_argument("-o", "--output-dir", required=True, help="Output directory for results")
     p_find.add_argument("--config", required=True, help="Configuration file")
     # Bayesian-specific
     p_find.add_argument(
@@ -112,16 +110,10 @@ Advanced Exploration:
         help="Enable verbose output",
     )
 
-    p_apply = subparsers.add_parser(
-        "apply", help="Apply optimal parameters to a full dataset"
-    )
+    p_apply = subparsers.add_parser("apply", help="Apply optimal parameters to a full dataset")
     p_apply.add_argument("-i", "--data-dir", required=True, help="Input data directory")
-    p_apply.add_argument(
-        "--optimal-config", required=True, help="Path to the optimal configuration file"
-    )
-    p_apply.add_argument(
-        "-o", "--output-dir", required=True, help="Output directory for analysis"
-    )
+    p_apply.add_argument("--optimal-config", required=True, help="Path to the optimal configuration file")
+    p_apply.add_argument("-o", "--output-dir", required=True, help="Output directory for analysis")
     p_apply.add_argument(
         "--verbose",
         action="store_true",
@@ -139,22 +131,12 @@ Advanced Exploration:
         type=str,
         help="The output directory of the optimization run to review.",
     )
-    p_review.add_argument(
-        "--verbose", action="store_true", help="Enable verbose output"
-    )
-    p_review.add_argument(
-        "--no-emoji", action="store_true", help="Disable emoji in console output"
-    )
+    p_review.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    p_review.add_argument("--no-emoji", action="store_true", help="Disable emoji in console output")
 
-    p_sensitivity = subparsers.add_parser(
-        "sensitivity", help="Analyze parameter sensitivity"
-    )
-    p_sensitivity.add_argument(
-        "-i", "--data-dir", required=True, help="Input data directory"
-    )
-    p_sensitivity.add_argument(
-        "-o", "--output-dir", required=True, help="Output directory for results"
-    )
+    p_sensitivity = subparsers.add_parser("sensitivity", help="Analyze parameter sensitivity")
+    p_sensitivity.add_argument("-i", "--data-dir", required=True, help="Input data directory")
+    p_sensitivity.add_argument("-o", "--output-dir", required=True, help="Output directory for results")
     p_sensitivity.add_argument("--config", required=True, help="Configuration file")
     p_sensitivity.add_argument(
         "--verbose",

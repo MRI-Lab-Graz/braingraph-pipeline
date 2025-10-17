@@ -217,13 +217,9 @@ class SensitivityAnalyzer:
             logger.info(f"Baseline QA Score: {self.baseline_qa:.4f}")
 
         # Evaluate perturbed configuration
-        perturbed_config = self._set_parameter_value(
-            self.baseline_config, param_name, perturbed_value
-        )
+        perturbed_config = self._set_parameter_value(self.baseline_config, param_name, perturbed_value)
 
-        perturbed_qa = self._evaluate_config(
-            perturbed_config, f"perturbed_{param_name}"
-        )
+        perturbed_qa = self._evaluate_config(perturbed_config, f"perturbed_{param_name}")
 
         # Calculate sensitivity (gradient)
         if delta != 0:
@@ -245,9 +241,7 @@ class SensitivityAnalyzer:
 
         return sensitivity, baseline_value, perturbed_value
 
-    def analyze_all_parameters(
-        self, parameters: Optional[List[str]] = None
-    ) -> Dict[str, Dict]:
+    def analyze_all_parameters(self, parameters: Optional[List[str]] = None) -> Dict[str, Dict]:
         """
         Analyze sensitivity of all (or specified) parameters.
 
@@ -296,9 +290,7 @@ class SensitivityAnalyzer:
                 results[param_name] = {"sensitivity": 0.0, "error": str(e)}
 
         # Sort by absolute sensitivity
-        sorted_params = sorted(
-            results.items(), key=lambda x: x[1].get("abs_sensitivity", 0), reverse=True
-        )
+        sorted_params = sorted(results.items(), key=lambda x: x[1].get("abs_sensitivity", 0), reverse=True)
 
         # Print summary
         logger.info("\n" + "=" * 70)
@@ -349,9 +341,7 @@ class SensitivityAnalyzer:
 
         return results
 
-    def _create_visualization(
-        self, results: Dict, sorted_params: List[Tuple[str, Dict]]
-    ):
+    def _create_visualization(self, results: Dict, sorted_params: List[Tuple[str, Dict]]):
         """Create visualization of sensitivity analysis."""
         try:
             # Extract data for plotting
@@ -366,9 +356,7 @@ class SensitivityAnalyzer:
             colors = ["red" if s < 0 else "green" for s in sensitivities]
             ax1.barh(param_names, sensitivities, color=colors, alpha=0.7)
             ax1.set_xlabel("Sensitivity (∂QA/∂param)", fontsize=12)
-            ax1.set_title(
-                "Parameter Sensitivity\n(Positive = Increases QA)", fontsize=14
-            )
+            ax1.set_title("Parameter Sensitivity\n(Positive = Increases QA)", fontsize=14)
             ax1.axvline(x=0, color="black", linestyle="--", linewidth=0.5)
             ax1.grid(axis="x", alpha=0.3)
 
@@ -431,12 +419,8 @@ allowing you to focus optimization efforts where they matter most.
         required=True,
         help="Output directory for sensitivity analysis results",
     )
-    parser.add_argument(
-        "--config", required=True, help="Baseline configuration JSON file"
-    )
-    parser.add_argument(
-        "--parameters", nargs="+", help="Specific parameters to analyze (default: all)"
-    )
+    parser.add_argument("--config", required=True, help="Baseline configuration JSON file")
+    parser.add_argument("--parameters", nargs="+", help="Specific parameters to analyze (default: all)")
     parser.add_argument(
         "--perturbation",
         type=float,
@@ -444,9 +428,7 @@ allowing you to focus optimization efforts where they matter most.
         help="Perturbation factor as fraction of baseline (default: 0.1 = 10%%)",
     )
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
-    parser.add_argument(
-        "--no-emoji", action="store_true", help="Disable emoji in console output"
-    )
+    parser.add_argument("--no-emoji", action="store_true", help="Disable emoji in console output")
 
     args = parser.parse_args()
 

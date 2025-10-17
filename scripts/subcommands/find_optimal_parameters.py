@@ -124,8 +124,7 @@ class BayesianOptimizer:
         """
         if not SKOPT_AVAILABLE:
             raise ImportError(
-                "Bayesian optimization requires scikit-optimize.\n"
-                "Install with: pip install scikit-optimize"
+                "Bayesian optimization requires scikit-optimize.\n" "Install with: pip install scikit-optimize"
             )
 
         self.data_dir = Path(data_dir)
@@ -171,9 +170,7 @@ class BayesianOptimizer:
         config["tracking_parameters"] = tracking_params
 
         connectivity_opts = config.get("connectivity_options", {})
-        connectivity_opts["connectivity_threshold"] = float(
-            params["connectivity_threshold"]
-        )
+        connectivity_opts["connectivity_threshold"] = float(params["connectivity_threshold"])
         config["connectivity_options"] = connectivity_opts
 
         # Save config
@@ -200,8 +197,8 @@ class BayesianOptimizer:
 
         logger.info(f"\n{'='*70}")
         logger.info(f"🔬 Bayesian Iteration {iteration}/{self.n_iterations}")
-        logger.info(f"{'='*70}")
-        logger.info(f"Testing parameters:")
+        logger.info("=" * 70)
+        logger.info("Testing parameters:")
         for name, value in params.items():
             logger.info(f"  {name:25s} = {value}")
 
@@ -316,12 +313,8 @@ class BayesianOptimizer:
         progress = {
             "n_iterations": self.n_iterations,
             "completed_iterations": len(self.iteration_results),
-            "best_score": (
-                float(self.best_score) if self.best_score != -np.inf else None
-            ),
-            "best_params": {
-                k: to_json_safe(v) for k, v in (self.best_params or {}).items()
-            },
+            "best_score": (float(self.best_score) if self.best_score != -np.inf else None),
+            "best_params": {k: to_json_safe(v) for k, v in (self.best_params or {}).items()},
             "all_iterations": self.iteration_results,
         }
 
@@ -343,7 +336,7 @@ class BayesianOptimizer:
         logger.info(f"Data directory: {self.data_dir}")
         logger.info(f"Output directory: {self.output_dir}")
         logger.info(f"Number of iterations: {self.n_iterations}")
-        logger.info(f"Parameter space:")
+        logger.info("Parameter space:")
         for name in self.param_space.get_param_names():
             param_range = getattr(self.param_space, name)
             logger.info(f"  {name:25s}: {param_range}")
@@ -386,12 +379,8 @@ class BayesianOptimizer:
             # Parallel execution using Optimizer.ask/tell with ThreadPoolExecutor
             # Ensure n_initial_points is not greater than n_iterations
             n_initial_points = min(5, self.n_iterations)
-            opt = SkOptimizer(
-                space, random_state=self.random_state, n_initial_points=n_initial_points
-            )
-            executor = concurrent.futures.ThreadPoolExecutor(
-                max_workers=self.max_workers
-            )
+            opt = SkOptimizer(space, random_state=self.random_state, n_initial_points=n_initial_points)
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers)
 
             # Track next iteration number for parallel execution
             next_iteration = 1
@@ -441,9 +430,7 @@ class BayesianOptimizer:
                 executor.shutdown(wait=True)
 
             # Get best result from our tracked results
-            skopt_result_x = (
-                list((self.best_params or {}).values()) if self.best_params else []
-            )
+            skopt_result_x = list((self.best_params or {}).values()) if self.best_params else []
             skopt_result_fun = -self.best_score if self.best_score != -np.inf else 0.0
             skopt_result_n_calls = len(self.iteration_results)
 
@@ -452,7 +439,7 @@ class BayesianOptimizer:
         logger.info("✅ BAYESIAN OPTIMIZATION COMPLETE")
         logger.info("=" * 70)
         logger.info(f"Best QA Score: {self.best_score:.4f}")
-        logger.info(f"Best parameters:")
+        logger.info("Best parameters:")
         for name, value in (self.best_params or {}).items():
             logger.info(f"  {name:25s} = {value}")
 
@@ -473,9 +460,7 @@ class BayesianOptimizer:
             "n_iterations": self.n_iterations,
             "max_workers": self.max_workers,
             "best_qa_score": float(self.best_score),
-            "best_parameters": {
-                k: to_json_safe(v) for k, v in (self.best_params or {}).items()
-            },
+            "best_parameters": {k: to_json_safe(v) for k, v in (self.best_params or {}).items()},
             "skopt_result": {
                 "x": [to_json_safe(v) for v in skopt_result_x],
                 "fun": float(skopt_result_fun),
@@ -566,9 +551,7 @@ Example usage:
         help="[Sweep] Number of subjects for testing (default: 3)",
     )
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
-    parser.add_argument(
-        "--no-emoji", action="store_true", help="Disable emoji in console output"
-    )
+    parser.add_argument("--no-emoji", action="store_true", help="Disable emoji in console output")
 
     args = parser.parse_args()
 
@@ -632,7 +615,7 @@ def run_sweep(args):
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(levelname)s - %(message)s",
     )
-    
+
     logger.info("\n" + "=" * 70)
     logger.info("� PARAMETER SWEEP FOR TRACTOGRAPHY PARAMETERS")
     logger.info("=" * 70)
@@ -642,7 +625,7 @@ def run_sweep(args):
     logger.info(f"Number of subjects: {args.subjects}")
     logger.info(f"Max parallel workers: {args.max_workers}")
     logger.info("=" * 70 + "\n")
-    
+
     # Load base configuration
     try:
         with open(args.config, "r") as f:
@@ -653,7 +636,7 @@ def run_sweep(args):
     except json.JSONDecodeError as e:
         logger.error(f"❌ Invalid JSON in configuration file: {e}")
         sys.exit(1)
-    
+
     # Import sweep utilities
     try:
         from scripts.utils.sweep_utils import (
@@ -661,27 +644,26 @@ def run_sweep(args):
             grid_product,
             random_sampling,
             lhs_sampling,
-            apply_param_choice_to_config,
         )
     except ImportError as e:
         logger.error(f"❌ Failed to import sweep utilities: {e}")
         sys.exit(1)
-    
+
     # Build parameter grid
     param_values, mapping = build_param_grid_from_config(base_config)
-    
+
     if not param_values:
         logger.error("❌ No sweep parameters defined in configuration file")
         logger.error("   Add a 'sweep_parameters' section to your config")
         sys.exit(1)
-    
+
     # Determine sampling strategy
     sweep_params = base_config.get("sweep_parameters", {})
     sampling_config = sweep_params.get("sampling", {})
     method = sampling_config.get("method", "grid").lower()
     n_samples = int(sampling_config.get("n_samples", 0))
     seed = int(sampling_config.get("random_seed", 42))
-    
+
     # Generate parameter combinations
     if method == "grid" or n_samples <= 0:
         combinations = grid_product(param_values)
@@ -699,20 +681,20 @@ def run_sweep(args):
     else:
         logger.error(f"❌ Unknown sampling method: {method}")
         sys.exit(1)
-    
+
     # Create output directory structure
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     configs_dir = output_dir / "configs"
     configs_dir.mkdir(exist_ok=True)
-    
+
     combinations_dir = output_dir / "combinations"
     combinations_dir.mkdir(exist_ok=True)
-    
+
     # Run sweep
-    logger.info(f"\n🚀 Starting parameter sweep...\n")
-    
+    logger.info("\n🚀 Starting parameter sweep...\n")
+
     sweep_optimizer = SweepOptimizer(
         data_dir=args.data_dir,
         output_dir=args.output_dir,
@@ -723,7 +705,7 @@ def run_sweep(args):
         max_workers=args.max_workers,
         verbose=args.verbose,
     )
-    
+
     try:
         results = sweep_optimizer.run()
         logger.info("✅ Parameter sweep completed successfully!")
@@ -732,6 +714,7 @@ def run_sweep(args):
         logger.error(f"❌ Parameter sweep failed: {e}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -739,10 +722,10 @@ def run_sweep(args):
 class SweepOptimizer:
     """
     Parameter sweep optimizer for tractography parameters.
-    
+
     Tests multiple parameter combinations and selects the best one.
     """
-    
+
     def __init__(
         self,
         data_dir: str,
@@ -756,7 +739,7 @@ class SweepOptimizer:
     ):
         """
         Initialize sweep optimizer.
-        
+
         Args:
             data_dir: Path to input data directory
             output_dir: Path to output directory
@@ -775,65 +758,65 @@ class SweepOptimizer:
         self.n_subjects = n_subjects
         self.max_workers = max(1, int(max_workers))
         self.verbose = verbose
-        
+
         # Create output directories
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.configs_dir = self.output_dir / "configs"
         self.configs_dir.mkdir(exist_ok=True)
         self.combinations_dir = self.output_dir / "combinations"
         self.combinations_dir.mkdir(exist_ok=True)
-        
+
         # Results storage
         self.results = []
         self.best_combination = None
         self.best_score = -np.inf
-    
+
     def _create_config_for_combination(self, combo: Dict[str, Any], index: int) -> Path:
         """Create a JSON config file for the given parameter combination."""
         from scripts.utils.sweep_utils import apply_param_choice_to_config
-        
+
         # Apply parameter choices to base config
         config = apply_param_choice_to_config(self.base_config, combo, self.mapping)
-        
+
         # Add metadata
         config["sweep_meta"] = {
             "index": index,
             "combination": combo,
             "total_combinations": len(self.combinations),
         }
-        
+
         # Save config
         config_path = self.configs_dir / f"combination_{index:04d}.json"
         with open(config_path, "w") as f:
             json.dump(config, f, indent=2)
-        
+
         return config_path
-    
+
     def _evaluate_combination(self, combo: Dict[str, Any], index: int) -> Dict[str, Any]:
         """
         Evaluate a parameter combination.
-        
+
         Args:
             combo: Parameter combination to test
             index: Combination index
-            
+
         Returns:
             Dictionary with evaluation results
         """
-        logger.info(f"\n{'='*70}")
+        logger.info("\n" + "=" * 70)
         logger.info(f"🔬 Combination {index}/{len(self.combinations)}")
-        logger.info(f"{'='*70}")
-        logger.info(f"Parameters:")
+        logger.info("=" * 70)
+        logger.info("Parameters:")
         for key, value in combo.items():
             logger.info(f"  {key:25s} = {value}")
-        
+
         # Create config for this combination
         config_path = self._create_config_for_combination(combo, index)
-        
+
         # Create output directory for this combination
         combo_output = self.combinations_dir / f"combination_{index:04d}"
         combo_output.mkdir(exist_ok=True)
-        
+
         try:
             # Run pipeline with these parameters
             cmd = [
@@ -852,9 +835,9 @@ class SweepOptimizer:
                 cmd.append("--verbose")
             else:
                 cmd.append("--quiet")
-            
+
             result = subprocess.run(cmd, capture_output=True, text=True)
-            
+
             if result.returncode != 0:
                 logger.warning(f"⚠️  Pipeline failed for combination {index}")
                 if self.verbose:
@@ -866,7 +849,7 @@ class SweepOptimizer:
                     "score": 0.0,
                     "status": "failed",
                 }
-            
+
             # Extract QA score from results
             opt_csv = combo_output / "02_optimization" / "optimized_metrics.csv"
             if not opt_csv.exists():
@@ -877,9 +860,9 @@ class SweepOptimizer:
                     "score": 0.0,
                     "status": "no_results",
                 }
-            
+
             df = pd.read_csv(opt_csv)
-            
+
             # Use quality_score_raw mean as primary metric
             if "quality_score_raw" in df.columns:
                 score = float(df["quality_score_raw"].mean())
@@ -893,9 +876,9 @@ class SweepOptimizer:
                     "score": 0.0,
                     "status": "no_score",
                 }
-            
+
             logger.info(f"✅ QA Score: {score:.4f}")
-            
+
             return {
                 "index": index,
                 "combination": combo,
@@ -904,7 +887,7 @@ class SweepOptimizer:
                 "config_path": str(config_path),
                 "output_dir": str(combo_output),
             }
-            
+
         except Exception as e:
             logger.error(f"❌ Error evaluating combination {index}: {e}")
             return {
@@ -914,23 +897,23 @@ class SweepOptimizer:
                 "status": "error",
                 "error": str(e),
             }
-    
+
     def run(self) -> Dict[str, Any]:
         """
         Run parameter sweep.
-        
+
         Returns:
             Dictionary with sweep results
         """
         import concurrent.futures
-        
+
         # Evaluate all combinations
         if self.max_workers <= 1:
             # Sequential execution
             for i, combo in enumerate(self.combinations, 1):
                 result = self._evaluate_combination(combo, i)
                 self.results.append(result)
-                
+
                 if result["score"] > self.best_score:
                     self.best_score = result["score"]
                     self.best_combination = result
@@ -941,15 +924,15 @@ class SweepOptimizer:
                     executor.submit(self._evaluate_combination, combo, i): i
                     for i, combo in enumerate(self.combinations, 1)
                 }
-                
+
                 for future in concurrent.futures.as_completed(futures):
                     result = future.result()
                     self.results.append(result)
-                    
+
                     if result["score"] > self.best_score:
                         self.best_score = result["score"]
                         self.best_combination = result
-        
+
         # Final results
         logger.info("\n" + "=" * 70)
         logger.info("✅ PARAMETER SWEEP COMPLETE")
@@ -958,7 +941,7 @@ class SweepOptimizer:
         logger.info(f"Best combination (#{self.best_combination['index']}):")
         for key, value in self.best_combination["combination"].items():
             logger.info(f"  {key:25s} = {value}")
-        
+
         # Save results
         results_file = self.output_dir / "sweep_results.json"
         final_results = {
@@ -968,13 +951,13 @@ class SweepOptimizer:
             "best_combination": self.best_combination,
             "all_results": self.results,
         }
-        
+
         with open(results_file, "w") as f:
             json.dump(final_results, f, indent=2)
-        
+
         logger.info(f"\n📊 Full results saved to: {results_file}")
         logger.info("=" * 70 + "\n")
-        
+
         return final_results
 
 

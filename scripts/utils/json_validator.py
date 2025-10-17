@@ -120,11 +120,7 @@ class JSONValidator:
 
     def _is_pipeline_test_config(self, config: Dict[str, Any]) -> bool:
         """Check if this is a pipeline test configuration."""
-        return (
-            "test_config" in config
-            or "data_selection" in config
-            or "pipeline_config" in config
-        )
+        return "test_config" in config or "data_selection" in config or "pipeline_config" in config
 
     def _validate_pipeline_test_config(self, config: Dict[str, Any]) -> List[str]:
         """Validate pipeline test configuration."""
@@ -135,9 +131,7 @@ class JSONValidator:
             test_config = config["test_config"]
             if "name" not in test_config:
                 errors.append("test_config.name is required")
-            if "enabled" in test_config and not isinstance(
-                test_config["enabled"], bool
-            ):
+            if "enabled" in test_config and not isinstance(test_config["enabled"], bool):
                 errors.append("test_config.enabled must be boolean")
 
         # Check data_selection section
@@ -146,16 +140,12 @@ class JSONValidator:
             if "source_dir" not in data_sel:
                 errors.append("data_selection.source_dir is required")
             elif not Path(data_sel["source_dir"]).exists():
-                errors.append(
-                    f"data_selection.source_dir does not exist: {data_sel['source_dir']}"
-                )
+                errors.append(f"data_selection.source_dir does not exist: {data_sel['source_dir']}")
 
             if "selection_method" in data_sel:
                 valid_methods = ["random", "first", "specific"]
                 if data_sel["selection_method"] not in valid_methods:
-                    errors.append(
-                        f"data_selection.selection_method must be one of: {valid_methods}"
-                    )
+                    errors.append(f"data_selection.selection_method must be one of: {valid_methods}")
 
             if "n_subjects" in data_sel:
                 n_subjects = data_sel["n_subjects"]
@@ -170,17 +160,13 @@ class JSONValidator:
             if "extraction_config" in pipeline_config:
                 config_file = pipeline_config["extraction_config"]
                 if not Path(config_file).exists():
-                    errors.append(
-                        f"pipeline_config.extraction_config file not found: {config_file}"
-                    )
+                    errors.append(f"pipeline_config.extraction_config file not found: {config_file}")
 
             if "steps_to_run" in pipeline_config:
                 valid_steps = ["01", "02", "03", "04"]
                 for step in pipeline_config["steps_to_run"]:
                     if step not in valid_steps:
-                        errors.append(
-                            f"Invalid step in pipeline_config.steps_to_run: {step}"
-                        )
+                        errors.append(f"Invalid step in pipeline_config.steps_to_run: {step}")
 
         return errors
 
@@ -228,9 +214,7 @@ class JSONValidator:
         if "atlases" in config:
             for atlas in config["atlases"]:
                 if atlas not in valid_atlases:
-                    errors.append(
-                        f"Unknown atlas: {atlas}. Valid atlases: {sorted(valid_atlases)}"
-                    )
+                    errors.append(f"Unknown atlas: {atlas}. Valid atlases: {sorted(valid_atlases)}")
 
         # Validate connectivity values
         valid_metrics = {"count", "fa", "qa", "ncount2", "md", "ad", "rd", "iso"}
@@ -238,9 +222,7 @@ class JSONValidator:
         if "connectivity_values" in config:
             for metric in config["connectivity_values"]:
                 if metric not in valid_metrics:
-                    errors.append(
-                        f"Unknown connectivity metric: {metric}. Valid metrics: {sorted(valid_metrics)}"
-                    )
+                    errors.append(f"Unknown connectivity metric: {metric}. Valid metrics: {sorted(valid_metrics)}")
 
         # Check parameter ranges
         if "tracking_parameters" in config:
@@ -271,9 +253,7 @@ class JSONValidator:
         # Check tract count is reasonable
         if "tract_count" in config:
             if config["tract_count"] < 1000:
-                errors.append(
-                    "tract_count should be at least 1000 for meaningful results"
-                )
+                errors.append("tract_count should be at least 1000 for meaningful results")
             elif config["tract_count"] > 10000000:
                 errors.append("tract_count over 10 million may cause memory issues")
 
@@ -337,31 +317,23 @@ class JSONValidator:
         # Check missing required fields
         missing_fields = self.get_missing_required_fields(config_path)
         if missing_fields:
-            suggestions.append(
-                f"Add missing required fields: {', '.join(missing_fields)}"
-            )
+            suggestions.append(f"Add missing required fields: {', '.join(missing_fields)}")
 
         # Check DSI Studio path
         if "dsi_studio_cmd" in config:
             dsi_path = Path(config["dsi_studio_cmd"])
             if not dsi_path.exists():
-                suggestions.append(
-                    "Update dsi_studio_cmd path to correct DSI Studio executable location"
-                )
+                suggestions.append("Update dsi_studio_cmd path to correct DSI Studio executable location")
 
         # Suggest common fixes
         if "track_count" in config and "tract_count" not in config:
-            suggestions.append(
-                "Rename 'track_count' to 'tract_count' (DSI Studio expects 'tract_count')"
-            )
+            suggestions.append("Rename 'track_count' to 'tract_count' (DSI Studio expects 'tract_count')")
 
         if "atlases" not in config or not config.get("atlases"):
             suggestions.append("Add at least one atlas to the 'atlases' array")
 
         if "connectivity_values" not in config or not config.get("connectivity_values"):
-            suggestions.append(
-                "Add at least one connectivity metric to 'connectivity_values' array"
-            )
+            suggestions.append("Add at least one connectivity metric to 'connectivity_values' array")
 
         return suggestions
 
@@ -388,7 +360,7 @@ def validate_config_file(config_path: str, schema_path: Optional[str] = None) ->
         # Print suggestions
         suggestions = validator.suggest_fixes(config_path)
         if suggestions:
-            print(f"\n💡 Suggested fixes:")
+            print("\n💡 Suggested fixes:")
             for suggestion in suggestions:
                 print(f"   • {suggestion}")
 

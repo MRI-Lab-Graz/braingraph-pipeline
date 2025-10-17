@@ -88,9 +88,9 @@ def aggregate_network_measures(input_dir, output_file):
             # Read the CSV file (it's actually tab-separated with no header)
             # Only read the first part until we hit "network_measures" which indicates the connectivity matrix
             lines = []
-            with open(csv_file, 'r') as f:
+            with open(csv_file, "r") as f:
                 for line in f:
-                    if line.startswith('network_measures'):
+                    if line.startswith("network_measures"):
                         break
                     lines.append(line.strip())
 
@@ -98,10 +98,10 @@ def aggregate_network_measures(input_dir, output_file):
                 continue
 
             # Parse the network measures
-            row_data = {'subject_id': subject_id, 'atlas': atlas, 'connectivity_metric': metric_type}
+            row_data = {"subject_id": subject_id, "atlas": atlas, "connectivity_metric": metric_type}
             for line in lines:
-                if '\t' in line:
-                    parts = line.split('\t')
+                if "\t" in line:
+                    parts = line.split("\t")
                     if len(parts) == 2:
                         metric_name = parts[0].strip()
                         try:

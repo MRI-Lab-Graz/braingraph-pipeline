@@ -63,9 +63,7 @@ def _load_wave_selected_params(wave_dir: Path) -> Optional[Dict]:
     return None
 
 
-def aggregate_top_candidates(
-    wave_dirs: List[Path], out_dir: Path, top_n: int = 3
-) -> Dict:
+def aggregate_top_candidates(wave_dirs: List[Path], out_dir: Path, top_n: int = 3) -> Dict:
     # key: (atlas, metric, tract_count) -> list of scores across waves
     scores: Dict[Tuple[str, str, Optional[int]], List[float]] = {}
     details: Dict[Tuple[str, str, Optional[int]], List[Dict]] = {}
@@ -132,11 +130,7 @@ def aggregate_top_candidates(
                 "per_wave": details[(atlas, metric, tract_count)],
                 # Surface parameters from first available wave snapshot
                 "parameters": next(
-                    (
-                        d.get("parameters")
-                        for d in details[(atlas, metric, tract_count)]
-                        if d.get("parameters")
-                    ),
+                    (d.get("parameters") for d in details[(atlas, metric, tract_count)] if d.get("parameters")),
                     None,
                 ),
             }
@@ -161,9 +155,7 @@ def aggregate_top_candidates(
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Aggregate top candidates across waves"
-    )
+    parser = argparse.ArgumentParser(description="Aggregate top candidates across waves")
     parser.add_argument(
         "--dry-run",
         action="store_true",

@@ -58,9 +58,7 @@ def _abs(p: str | os.PathLike | None) -> str | None:
 def _run(cmd: list[str], cwd: str | None = None, live_prefix: str | None = None) -> int:
     """Run a subprocess with live stdout folding and return code."""
     print(f"🚀 Running: {' '.join(cmd)}")
-    proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=cwd
-    )
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=cwd)
     assert proc.stdout is not None
     for line in proc.stdout:
         if live_prefix:
@@ -97,9 +95,7 @@ def ensure_dirs(paths: Paths):
     paths.step03_dir.mkdir(parents=True, exist_ok=True)
 
 
-def run_step01(
-    data_dir: str, extraction_config: str, paths: Paths, quiet: bool
-) -> None:
+def run_step01(data_dir: str, extraction_config: str, paths: Paths, quiet: bool) -> None:
     """Run batch connectivity extraction (Step 01)."""
     exe = sys.executable
     script = str(scripts_dir() / "extract_connectivity_matrices.py")
@@ -138,9 +134,7 @@ def run_step02(paths: Paths, quiet: bool) -> None:
     cmd = [exe, script, "-i", str(paths.agg_csv), "-o", str(paths.step02_dir)]
     rc = _run(cmd, live_prefix="step02")
     if rc != 0 or not (paths.step02_dir / "optimized_metrics.csv").exists():
-        raise SystemExit(
-            f"Step 02 failed (code {rc}); expected optimized_metrics.csv in {paths.step02_dir}"
-        )
+        raise SystemExit(f"Step 02 failed (code {rc}); expected optimized_metrics.csv in {paths.step02_dir}")
 
 
 def run_step03(paths: Paths, quiet: bool) -> None:
@@ -191,9 +185,7 @@ def maybe_build_extraction_config_from_cv(cv_config_path: str, out_dir: Path) ->
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(
-        description="OptiConn Pipeline Orchestrator (Steps 01–03)"
-    )
+    ap = argparse.ArgumentParser(description="OptiConn Pipeline Orchestrator (Steps 01–03)")
     ap.add_argument(
         "--step",
         default="all",
@@ -205,12 +197,8 @@ def main() -> int:
         "--input",
         help="Alias for --data-dir (Step 01 input directory) or explicit input for single steps",
     )
-    ap.add_argument(
-        "--data-dir", help="Input data directory with .fz/.fib.gz files (Step 01)"
-    )
-    ap.add_argument(
-        "--output", required=True, help="Base output directory for pipeline results"
-    )
+    ap.add_argument("--data-dir", help="Input data directory with .fz/.fib.gz files (Step 01)")
+    ap.add_argument("--output", required=True, help="Base output directory for pipeline results")
     ap.add_argument(
         "--extraction-config",
         help="JSON extraction config for Step 01 (default: configs/braingraph_default_config.json)",
@@ -219,12 +207,8 @@ def main() -> int:
         "--cross-validated-config",
         help="Optional cross-validated config; will be converted to extraction-config if step includes 01",
     )
-    ap.add_argument(
-        "--quiet", action="store_true", help="Reduce console output where supported"
-    )
-    ap.add_argument(
-        "--verbose", action="store_true", help="Enable verbose output"
-    )
+    ap.add_argument("--quiet", action="store_true", help="Reduce console output where supported")
+    ap.add_argument("--verbose", action="store_true", help="Enable verbose output")
     args = ap.parse_args()
 
     root = repo_root()
@@ -242,9 +226,7 @@ def main() -> int:
 
     # If we got a cross-validated config and step includes 01, create a minimal extraction config from it
     if args.cross_validated_config and args.step in ("01", "all"):
-        derived = maybe_build_extraction_config_from_cv(
-            args.cross_validated_config, paths.output
-        )
+        derived = maybe_build_extraction_config_from_cv(args.cross_validated_config, paths.output)
         if derived:
             extraction_cfg = derived
 
@@ -267,10 +249,7 @@ def main() -> int:
 
         if args.step in ("01", "all", "analysis", "02", "03"):
             # Ensure aggregated CSV exists for downstream steps
-            if (
-                args.step in ("all", "analysis", "02", "03")
-                and not paths.agg_csv.exists()
-            ):
+            if args.step in ("all", "analysis", "02", "03") and not paths.agg_csv.exists():
                 run_aggregate(paths)
 
         if args.step in ("02", "all", "analysis"):
@@ -283,9 +262,7 @@ def main() -> int:
                 if args.step == "03" and args.input and Path(args.input).exists():
                     paths.optimized_csv = Path(args.input)
                 else:
-                    raise SystemExit(
-                        f"optimized_metrics.csv not found at {paths.optimized_csv}"
-                    )
+                    raise SystemExit(f"optimized_metrics.csv not found at {paths.optimized_csv}")
             run_step03(paths, args.quiet)
 
         print("✅ Pipeline completed successfully!")
@@ -310,9 +287,7 @@ if __name__ == "__main__":
 # ==================== Helper Functions (shared) ====================
 
 
-def setup_logging(
-    verbose: bool = False, quiet: bool = False, log_dir: str | None = None
-):
+def setup_logging(verbose: bool = False, quiet: bool = False, log_dir: str | None = None):
     """Set up logging configuration.
 
     Writes pipeline_run_YYYYMMDD_HHMMSS.log into the provided log_dir (typically the pipeline
@@ -343,9 +318,7 @@ def setup_logging(
 
     # Console handler
     console_handler = logging.StreamHandler()
-    console_level = (
-        logging.WARNING if quiet else (logging.DEBUG if verbose else logging.INFO)
-    )
+    console_level = logging.WARNING if quiet else (logging.DEBUG if verbose else logging.INFO)
     console_handler.setLevel(console_level)
     console_handler.setFormatter(formatter)
 
@@ -419,11 +392,7 @@ def find_organized_matrices(base_dir):
     for dir_path in base_path.iterdir():
         if dir_path.is_dir():
             # Check if it has atlas subdirectories
-            atlas_dirs = [
-                d
-                for d in dir_path.iterdir()
-                if d.is_dir() and not d.name.startswith(".")
-            ]
+            atlas_dirs = [d for d in dir_path.iterdir() if d.is_dir() and not d.name.startswith(".")]
             if len(atlas_dirs) > 3:  # Likely contains multiple atlases
                 return dir_path
 
@@ -448,20 +417,14 @@ def load_cross_validated_configuration(config_path):
     output_dir = config.get("output_directory", "analysis_results")
     validation_results = config.get("validation_results", {})
 
-    logging.info(
-        f"✅ Cross-validation status: {'PASSED' if validation_results.get('validation_passed') else 'FAILED'}"
-    )
-    logging.info(
-        f"📊 Parameter consistency: {validation_results.get('consistency_score', 0):.1%}"
-    )
+    logging.info(f"✅ Cross-validation status: {'PASSED' if validation_results.get('validation_passed') else 'FAILED'}")
+    logging.info(f"📊 Parameter consistency: {validation_results.get('consistency_score', 0):.1%}")
     logging.info(f"📁 Data directory: {data_dir}")
     logging.info(f"📁 Output directory: {output_dir}")
     logging.info(f"⚙️  Optimal parameters: {optimal_params}")
 
     if not validation_results.get("validation_passed", False):
-        raise ValueError(
-            "Cross-validation failed - cannot proceed with unvalidated parameters"
-        )
+        raise ValueError("Cross-validation failed - cannot proceed with unvalidated parameters")
 
     if not data_dir or not Path(data_dir).exists():
         raise FileNotFoundError(f"Data directory not found: {data_dir}")
@@ -532,9 +495,7 @@ def load_test_configuration_from_dict(config):
     method = data_selection.get("selection_method", "random")
     count = data_selection.get("n_subjects", 3)
     seed = data_selection.get("random_seed", 42)
-    file_pattern = data_selection.get(
-        "file_pattern", "*.fz"
-    )  # Updated for DSI Studio .fz files
+    file_pattern = data_selection.get("file_pattern", "*.fz")  # Updated for DSI Studio .fz files
 
     # Set random seed for reproducible results
     if seed:
@@ -551,9 +512,7 @@ def load_test_configuration_from_dict(config):
     all_files = list(data_path.glob(file_pattern))
 
     if not all_files:
-        raise FileNotFoundError(
-            f"No files matching '{file_pattern}' found in {source_dir}"
-        )
+        raise FileNotFoundError(f"No files matching '{file_pattern}' found in {source_dir}")
 
     logging.info(f"📁 Found {len(all_files)} total files")
 
@@ -576,9 +535,7 @@ def load_test_configuration_from_dict(config):
 
     elif method == "specific":
         specific_files = data_selection.get("specific_subjects", [])
-        selected_files = [
-            data_path / f for f in specific_files if (data_path / f).exists()
-        ]
+        selected_files = [data_path / f for f in specific_files if (data_path / f).exists()]
         logging.info(f"🎯 Selected {len(selected_files)} specific files")
 
     elif method == "all":
@@ -614,9 +571,7 @@ def load_test_configuration_from_dict(config):
         "data_dir": str(test_data_dir),
         "steps_to_run": pipeline_config.get("steps_to_run", ["01", "02", "03", "04"]),
         "output_base_dir": pipeline_config.get("output_base_dir", "analysis_results"),
-        "extraction_config": pipeline_config.get(
-            "extraction_config", "dsi_studio_tools/research_config.json"
-        ),
+        "extraction_config": pipeline_config.get("extraction_config", "dsi_studio_tools/research_config.json"),
         "test_info": test_info,
         "metadata": config.get("cross_validation_metadata", {}),
     }
@@ -673,9 +628,7 @@ def run_bootstrap_qa_validation(data_dir, config, args):
         else:
             result = subprocess.run(create_cmd, capture_output=True, text=True)
         if result.returncode != 0:
-            logging.error(
-                f"❌ Failed to create bootstrap configurations: {result.stderr}"
-            )
+            logging.error(f"❌ Failed to create bootstrap configurations: {result.stderr}")
             return False
 
         logging.info("✅ Bootstrap configurations created successfully")
@@ -717,9 +670,7 @@ def run_bootstrap_qa_validation(data_dir, config, args):
             logging.info(f"✅ Bootstrap Wave {wave_num} completed")
 
         if len(bootstrap_results) != 2:
-            logging.error(
-                f"❌ Expected 2 bootstrap result directories, found {len(bootstrap_results)}"
-            )
+            logging.error(f"❌ Expected 2 bootstrap result directories, found {len(bootstrap_results)}")
             return False
 
         # Step 3: Validate bootstrap results
@@ -747,50 +698,33 @@ def run_bootstrap_qa_validation(data_dir, config, args):
             import json
 
             qa_data = json.loads(output)
-            overall_rating = qa_data.get("overall_assessment", {}).get(
-                "overall_stability", "UNKNOWN"
-            )
+            overall_rating = qa_data.get("overall_assessment", {}).get("overall_stability", "UNKNOWN")
             score = qa_data.get("overall_assessment", {}).get("average_score", 0)
 
             if overall_rating in ["EXCELLENT", "GOOD"]:
-                logging.info(
-                    f"✅ Bootstrap QA validation PASSED - Rating: {overall_rating} (Score: {score:.1f}/4.0)"
-                )
+                logging.info(f"✅ Bootstrap QA validation PASSED - Rating: {overall_rating} (Score: {score:.1f}/4.0)")
                 return True
             elif overall_rating == "FAIR":
                 logging.warning(
                     f"⚠️ Bootstrap QA validation shows fair stability - Rating: {overall_rating} (Score: {score:.1f}/4.0)"
                 )
-                logging.warning(
-                    "💡 Consider adjusting parameters or increasing sample size"
-                )
+                logging.warning("💡 Consider adjusting parameters or increasing sample size")
                 return True  # Still proceed but with warnings
             else:
-                logging.error(
-                    f"❌ Bootstrap QA validation failed - Rating: {overall_rating} (Score: {score:.1f}/4.0)"
-                )
+                logging.error(f"❌ Bootstrap QA validation failed - Rating: {overall_rating} (Score: {score:.1f}/4.0)")
                 return False
 
         except json.JSONDecodeError:
             # Fallback to string parsing for older output format
-            if (
-                "QA metrics are highly stable - proceed with full dataset analysis"
-                in output
-            ):
-                logging.info(
-                    "✅ Bootstrap QA validation PASSED - proceeding with full dataset"
-                )
+            if "QA metrics are highly stable - proceed with full dataset analysis" in output:
+                logging.info("✅ Bootstrap QA validation PASSED - proceeding with full dataset")
                 return True
             elif "EXCELLENT" in output or "GOOD" in output:
-                logging.info(
-                    "✅ Bootstrap QA validation shows good stability - proceeding"
-                )
+                logging.info("✅ Bootstrap QA validation shows good stability - proceeding")
                 return True
             else:
                 logging.warning("⚠️ Bootstrap QA validation shows concerning stability")
-                logging.warning(
-                    "💡 Consider adjusting parameters or increasing sample size"
-                )
+                logging.warning("💡 Consider adjusting parameters or increasing sample size")
                 return True  # Still proceed but with warnings
 
     except Exception as e:
@@ -848,9 +782,7 @@ Examples:
         help="Reduce console output (warnings/errors only)",
     )
 
-    parser.add_argument(
-        "--config", "-c", help="Configuration file for pipeline parameters"
-    )
+    parser.add_argument("--config", "-c", help="Configuration file for pipeline parameters")
 
     parser.add_argument(
         "--test-config",
@@ -912,9 +844,7 @@ Examples:
         "Replaces individual parameter flags. See example configs.",
     )
 
-    extraction_group.add_argument(
-        "--pilot", action="store_true", help="Run pilot test on subset of files"
-    )
+    extraction_group.add_argument("--pilot", action="store_true", help="Run pilot test on subset of files")
 
     extraction_group.add_argument(
         "--pilot-count",
@@ -972,9 +902,7 @@ Examples:
         print("🔧 MANUAL USAGE:")
         print()
         print("  # Individual steps")
-        print(
-            "  python run_pipeline.py --step 01 --data-dir /path/to/data --extraction-config optimal_config.json"
-        )
+        print("  python run_pipeline.py --step 01 --data-dir /path/to/data --extraction-config optimal_config.json")
         print("  python run_pipeline.py --step 02 --input organized_matrices/")
         print("  python run_pipeline.py --step 03")
         print("  python run_pipeline.py --step 04")
@@ -995,16 +923,12 @@ Examples:
         print("  python run_pipeline.py --help")
         print("  See README.md for comprehensive documentation")
         print()
-        print(
-            "🎯 TIP: Start with 'python run_pipeline.py --test-config test_full_pipeline.json'"
-        )
+        print("🎯 TIP: Start with 'python run_pipeline.py --test-config test_full_pipeline.json'")
         print("=" * 60)
         sys.exit(0)
 
     # Determine output base directory early for logging placement
-    intended_output_dir = (
-        args.output if hasattr(args, "output") and args.output else "analysis_results"
-    )
+    intended_output_dir = args.output if hasattr(args, "output") and args.output else "analysis_results"
 
     # Set up logging (log file goes into the output directory)
     logger = setup_logging(args.verbose, args.quiet, intended_output_dir)
@@ -1014,9 +938,7 @@ Examples:
     test_data_dir = None
     if args.cross_validated_config:
         try:
-            config_dict = load_cross_validated_configuration(
-                args.cross_validated_config
-            )
+            config_dict = load_cross_validated_configuration(args.cross_validated_config)
 
             # Override pipeline parameters from cross-validated config
             args.data_dir = config_dict["data_dir"]
@@ -1029,7 +951,7 @@ Examples:
                 if len(steps_list) == 1:
                     args.step = steps_list[0]
 
-            logging.info(f"🔬 Running with cross-validated parameters")
+            logging.info("🔬 Running with cross-validated parameters")
             logging.info(f"📊 Validation metadata: {config_dict.get('metadata', {})}")
 
         except Exception as e:
@@ -1065,9 +987,7 @@ Examples:
             if not args.data_dir and test_data_dir:
                 args.data_dir = str(test_data_dir)
 
-            logger.info(
-                f"🧪 Test mode enabled - using {len(list(test_data_dir.glob('*')))} subjects"
-            )
+            logger.info(f"🧪 Test mode enabled - using {len(list(test_data_dir.glob('*')))} subjects")
 
         except Exception as e:
             logger.error(f"❌ Failed to load test configuration: {e}")
@@ -1083,25 +1003,17 @@ Examples:
             # Use the original data directory from the test config, not the test_data symlink dir
             original_data_dir = test_config.get("data_selection", {}).get("source_dir")
             if not original_data_dir:
-                logger.error(
-                    "❌ Cannot run bootstrap QA: no source_dir in test configuration"
-                )
+                logger.error("❌ Cannot run bootstrap QA: no source_dir in test configuration")
                 sys.exit(1)
 
             # Run bootstrap QA validation using original data directory
-            qa_passed = run_bootstrap_qa_validation(
-                original_data_dir, test_config, args
-            )
+            qa_passed = run_bootstrap_qa_validation(original_data_dir, test_config, args)
             if not qa_passed:
                 logger.error("❌ Bootstrap QA validation failed - stopping pipeline")
-                logger.info(
-                    "💡 Consider adjusting parameters or manually reviewing results"
-                )
+                logger.info("💡 Consider adjusting parameters or manually reviewing results")
                 sys.exit(1)
 
-            logger.info(
-                "✅ Bootstrap QA validation passed - continuing with full dataset"
-            )
+            logger.info("✅ Bootstrap QA validation passed - continuing with full dataset")
         else:
             logger.info("ℹ️  Bootstrap QA skipped (not a production dataset)")
     elif args.enable_bootstrap_qa:
@@ -1115,13 +1027,9 @@ Examples:
         if args.data_dir:
             optimization_data_dir = args.data_dir
         elif test_config:
-            optimization_data_dir = test_config.get("data_selection", {}).get(
-                "source_dir"
-            )
+            optimization_data_dir = test_config.get("data_selection", {}).get("source_dir")
         else:
-            logger.error(
-                "❌ Bootstrap optimization requires --data-dir or --test-config"
-            )
+            logger.error("❌ Bootstrap optimization requires --data-dir or --test-config")
             sys.exit(1)
 
         if not optimization_data_dir or not Path(optimization_data_dir).exists():
@@ -1160,9 +1068,7 @@ Examples:
 
         if result.returncode == 0:
             logger.info("✅ Bootstrap parameter optimization completed successfully!")
-            logger.info(
-                "💡 Check the generated optimized_full_analysis_config.json for next steps"
-            )
+            logger.info("💡 Check the generated optimized_full_analysis_config.json for next steps")
         else:
             logger.error("❌ Bootstrap parameter optimization failed")
 
@@ -1194,15 +1100,11 @@ Examples:
                 sys.exit(1)
             logger.info(f"📁 Data directory: {data_path}")
         else:
-            logger.error(
-                "For step 01, please specify --data-dir or --input with raw data directory"
-            )
+            logger.error("For step 01, please specify --data-dir or --input with raw data directory")
             sys.exit(1)
 
     # For steps 02-04, find organized matrices
-    if args.step in ["02", "03", "04", "analysis"] or (
-        args.step == "all" and args.input
-    ):
+    if args.step in ["02", "03", "04", "analysis"] or (args.step == "all" and args.input):
         if args.input:
             input_path = Path(args.input)
             if not input_path.exists():
@@ -1212,12 +1114,8 @@ Examples:
             logger.info("🔍 Auto-detecting input directory from step 01 output...")
             input_path = find_organized_matrices(Path.cwd())
             if not input_path:
-                logger.error(
-                    "Could not auto-detect input directory. Please specify --input"
-                )
-                logger.error(
-                    "Looking for: organized_matrices/ or directories with atlas structure"
-                )
+                logger.error("Could not auto-detect input directory. Please specify --input")
+                logger.error("Looking for: organized_matrices/ or directories with atlas structure")
                 sys.exit(1)
             logger.info(f"📁 Auto-detected input: {input_path}")
     else:
@@ -1250,11 +1148,7 @@ Examples:
                     "script": "scripts/optimal_selection.py",
                     "name": "Quality-Based Selection",
                     "args": [
-                        str(
-                            output_path
-                            / "optimization_results"
-                            / "optimized_metrics.csv"
-                        ),
+                        str(output_path / "optimization_results" / "optimized_metrics.csv"),
                         str(output_path / "selected_combinations"),
                     ],
                 },
@@ -1375,17 +1269,11 @@ Examples:
         # Show next steps
         logger.info("\n📋 Results Available:")
         if "02" in steps_to_run:
-            logger.info(
-                f"  📊 Optimization results: {output_path}/optimization_results/"
-            )
+            logger.info(f"  📊 Optimization results: {output_path}/optimization_results/")
         if "03" in steps_to_run:
-            logger.info(
-                f"  🎯 Selected combinations: {output_path}/selected_combinations/"
-            )
+            logger.info(f"  🎯 Selected combinations: {output_path}/selected_combinations/")
         if "04" in steps_to_run:
-            logger.info(
-                f"  📈 Statistical analysis: {output_path}/statistical_results/"
-            )
+            logger.info(f"  📈 Statistical analysis: {output_path}/statistical_results/")
 
         # Run quality checks if in test mode
         if test_config:
@@ -1411,9 +1299,7 @@ Examples:
                             logger.info("✅ Parameter uniqueness check passed")
                             logger.info(f"   📈 Diversity ranges: {uniqueness_result}")
                         else:
-                            logger.warning(
-                                "⚠️  Parameter uniqueness check failed or no data"
-                            )
+                            logger.warning("⚠️  Parameter uniqueness check failed or no data")
 
                         # Run quality outlier analysis
                         if quality_config.get("run_outlier_analysis", False):
@@ -1423,28 +1309,19 @@ Examples:
                             if outlier_result:
                                 logger.info("✅ Quality outlier analysis completed")
                             else:
-                                logger.warning(
-                                    "⚠️  Quality outlier analysis failed or no data"
-                                )
+                                logger.warning("⚠️  Quality outlier analysis failed or no data")
 
                     except ImportError:
-                        logger.warning(
-                            "⚠️  Quality check module 'quick_quality_check.py' not found"
-                        )
+                        logger.warning("⚠️  Quality check module 'quick_quality_check.py' not found")
 
                 # Cleanup test data directory if requested
                 cleanup_config = test_config.get("cleanup", {})
-                if (
-                    cleanup_config.get("remove_intermediate_files", False)
-                    and test_data_dir
-                ):
+                if cleanup_config.get("remove_intermediate_files", False) and test_data_dir:
                     import shutil
 
                     try:
                         shutil.rmtree(test_data_dir)
-                        logger.info(
-                            f"🧹 Cleaned up test data directory: {test_data_dir}"
-                        )
+                        logger.info(f"🧹 Cleaned up test data directory: {test_data_dir}")
                     except Exception as e:
                         logger.warning(f"⚠️  Failed to cleanup test directory: {e}")
 

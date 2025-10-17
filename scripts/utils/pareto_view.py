@@ -78,15 +78,9 @@ def _load_wave_table(path: Path) -> pd.DataFrame | None:
                         "quality_score_raw_mean": rec.get("quality_score_raw_mean"),
                         "quality_score_norm_max": rec.get("quality_score_norm_max"),
                         "density_mean": agg.get("density_mean"),
-                        "global_efficiency_weighted_mean": agg.get(
-                            "global_efficiency_weighted_mean"
-                        ),
-                        "small_worldness_binary_mean": agg.get(
-                            "small_worldness_binary_mean"
-                        ),
-                        "small_worldness_weighted_mean": agg.get(
-                            "small_worldness_weighted_mean"
-                        ),
+                        "global_efficiency_weighted_mean": agg.get("global_efficiency_weighted_mean"),
+                        "small_worldness_binary_mean": agg.get("small_worldness_binary_mean"),
+                        "small_worldness_weighted_mean": agg.get("small_worldness_weighted_mean"),
                         "atlas": rec.get("atlas"),
                         "connectivity_metric": rec.get("connectivity_metric"),
                     }
@@ -106,9 +100,7 @@ def _density_deviation(d: float | None, lo: float, hi: float) -> float:
     return 0.0
 
 
-def pareto_front(
-    df: pd.DataFrame, score_col: str, lo: float, hi: float
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def pareto_front(df: pd.DataFrame, score_col: str, lo: float, hi: float) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Compute Pareto-efficient subset.
 
     Returns (front_df, all_with_objectives_df)
@@ -118,8 +110,7 @@ def pareto_front(
     data["score"] = data[score_col]
     data["cost"] = data["tract_count"]
     data["density_dev"] = [
-        _density_deviation(x, lo, hi)
-        for x in data.get("density_mean", pd.Series([np.nan] * len(data)))
+        _density_deviation(x, lo, hi) for x in data.get("density_mean", pd.Series([np.nan] * len(data)))
     ]
     # Prepare vectors (minimize cost, minimize density_dev, maximize score -> minimize -score)
     objs = data[["cost", "density_dev", "score"]].to_numpy()
@@ -142,9 +133,7 @@ def pareto_front(
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(
-        description="Generate a Pareto view from sweep diagnostics"
-    )
+    ap = argparse.ArgumentParser(description="Generate a Pareto view from sweep diagnostics")
     ap.add_argument(
         "--dry-run",
         action="store_true",
@@ -157,9 +146,7 @@ def main() -> int:
     if len(sys.argv) == 1:
         ap.print_help()
         return 0
-    ap.add_argument(
-        "inputs", nargs="+", help="Wave directories or combo_diagnostics.csv files"
-    )
+    ap.add_argument("inputs", nargs="+", help="Wave directories or combo_diagnostics.csv files")
     ap.add_argument(
         "-o",
         "--output-dir",
@@ -180,9 +167,7 @@ def main() -> int:
         metavar=("LO", "HI"),
         help="Preferred density corridor (default: 0.05 0.40)",
     )
-    ap.add_argument(
-        "--plot", action="store_true", help="Also generate a scatter plot (PNG)"
-    )
+    ap.add_argument("--plot", action="store_true", help="Also generate a scatter plot (PNG)")
     args = ap.parse_args()
     if args.dry_run:
         print("[DRY-RUN] Pareto view preview")
@@ -206,9 +191,7 @@ def main() -> int:
     if "status" in df_all.columns:
         df_all = df_all[df_all["status"].fillna("ok") == "ok"]
 
-    front, with_obj = pareto_front(
-        df_all, args.score, args.density_range[0], args.density_range[1]
-    )
+    front, with_obj = pareto_front(df_all, args.score, args.density_range[0], args.density_range[1])
     # Save CSVs
     with_obj_out = out_dir / "pareto_candidates_with_objectives.csv"
     front_out = out_dir / "pareto_front.csv"
@@ -225,9 +208,7 @@ def main() -> int:
             x = with_obj["tract_count"]
             y = with_obj["score"]
             c = with_obj["density_dev"]
-            sc = plt.scatter(
-                x, y, c=c, cmap="viridis", s=38, alpha=0.75, edgecolors="none"
-            )
+            sc = plt.scatter(x, y, c=c, cmap="viridis", s=38, alpha=0.75, edgecolors="none")
             plt.colorbar(sc, label="Density deviation (to corridor)")
             # Overlay Pareto points
             plt.scatter(

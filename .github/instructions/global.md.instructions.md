@@ -36,6 +36,7 @@ python scripts/your_script.py --dry-run
 3. Test scripts with `--dry-run` flag
 4. Read script READMEs for proper usage
 5. Execute with appropriate parameters
+6. Avoid comprehensive summary report
 
 ## Compliance Requirements
 - No direct pip/conda installations outside of `install.sh`

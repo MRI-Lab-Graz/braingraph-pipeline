@@ -19,17 +19,19 @@ from scripts.utils.runtime import configure_stdio
 
 logger = logging.getLogger(__name__)
 
+
 def find_results_file(output_dir: Path) -> Path | None:
     """Find the main results JSON file in an output directory."""
     bayesian_results = output_dir / "bayesian_optimization_results.json"
     if bayesian_results.exists():
         return bayesian_results
-    
+
     sweep_results = output_dir / "sweep_results.json"
     if sweep_results.exists():
         return sweep_results
-        
+
     return None
+
 
 def display_summary(results_path: Path):
     """
@@ -45,17 +47,14 @@ def display_summary(results_path: Path):
 
     method = results.get("optimization_method", "unknown")
     best_score = results.get("best_qa_score")
-    
+
     if method == "bayesian":
         best_params = results.get("best_parameters", {})
         # For bayesian, we need to find the parameter space definition
         # It's not explicitly stored in a user-friendly way, so we'll just show the values.
-        param_ranges = {} # Placeholder
     elif method == "sweep":
         best_combo = results.get("best_combination", {})
         best_params = best_combo.get("combination", {})
-        # For sweep, we can try to find the original config to show ranges
-        param_ranges = {} # Placeholder
     else:
         logger.error(f"❌ Unknown optimization method '{method}' in results file.")
         return
@@ -76,21 +75,21 @@ def display_summary(results_path: Path):
     summary_data = []
     for param, value in best_params.items():
         summary_data.append({"Parameter": param, "Chosen Value": value})
-        
+
     df = pd.DataFrame(summary_data)
-    df_string = df.to_string(index=False, justify='left')
-    
+    df_string = df.to_string(index=False, justify="left")
+
     print(df_string)
     print("-" * 60)
-    
+
     # Provide guidance on where to find the full config
     if method == "bayesian":
         print("\n💡 The full configuration can be reconstructed from the parameters above.")
-        print(f"   The best iteration's output is in the 'iterations' subdirectory.")
+        print("   The best iteration's output is in the 'iterations' subdirectory.")
     elif method == "sweep":
         best_config_path = best_combo.get("config_path")
         if best_config_path:
-            print(f"\n💡 The full configuration for this run is stored in:")
+            print("\n💡 The full configuration for this run is stored in:")
             print(f"   {best_config_path}")
 
     print("=" * 60)
@@ -107,14 +106,12 @@ def main():
         type=str,
         help="The output directory of the 'find-optimal-parameters' run to review.",
     )
-    parser.add_argument(
-        "--no-emoji", action="store_true", help="Disable emoji in console output"
-    )
+    parser.add_argument("--no-emoji", action="store_true", help="Disable emoji in console output")
 
     args = parser.parse_args()
-    
+
     configure_stdio(args.no_emoji)
-    
+
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     output_dir = Path(args.output_dir)
@@ -127,7 +124,7 @@ def main():
         logger.error(f"❌ No optimization results file found in {output_dir}")
         logger.error("   (Looking for 'bayesian_optimization_results.json' or 'sweep_results.json')")
         sys.exit(1)
-        
+
     display_summary(results_file)
     sys.exit(0)
 
