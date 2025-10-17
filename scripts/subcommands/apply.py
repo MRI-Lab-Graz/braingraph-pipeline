@@ -44,7 +44,7 @@ from pathlib import Path
 
 def repo_root() -> Path:
     """Return the repository root directory (parent of the scripts directory)."""
-    return Path(__file__).resolve().parent.parent
+    return Path(__file__).resolve().parent.parent.parent
 
 
 def scripts_dir() -> Path:
@@ -170,9 +170,18 @@ def maybe_build_extraction_config_from_cv(cv_config_path: str, out_dir: Path) ->
                 metrics = [metrics]
             cfg = {
                 "description": "Auto-generated from cross-validated config",
+                "dsi_studio_cmd": data.get("dsi_studio_cmd"),
                 "atlases": atlases or [],
                 "connectivity_values": metrics or [],
             }
+            # Also propagate the full tracking and connectivity parameters
+            cfg.update(
+                {
+                    k: data[k]
+                    for k in ("tracking_parameters", "connectivity_options", "tract_count", "thread_count")
+                    if k in data
+                }
+            )
             out_cfg = out_dir / "extraction_from_cv.json"
             out_cfg.write_text(json.dumps(cfg, indent=2))
             return str(out_cfg)
@@ -212,6 +221,9 @@ def main() -> int:
     )
     ap.add_argument(
         "--quiet", action="store_true", help="Reduce console output where supported"
+    )
+    ap.add_argument(
+        "--verbose", action="store_true", help="Enable verbose output"
     )
     args = ap.parse_args()
 
@@ -615,7 +627,7 @@ def load_test_configuration(test_config_path):
 
     # Optional: Validate configuration first
     try:
-        from scripts.json_validator import validate_config_file
+        from scripts.utils.json_validator import validate_config_file
 
         if not validate_config_file(test_config_path):
             raise ValueError(f"Configuration validation failed: {test_config_path}")
